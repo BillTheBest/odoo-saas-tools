@@ -1,0 +1,305 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Odoo-saas-tools by ITPS</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Odoo-saas-tools</h1>
+        <p>Odoo (OpenERP) addons to provide SaaS</p>
+        <p class="view"><a href="https://github.com/ITPS/odoo-saas-tools">View the Project on GitHub <small>ITPS/odoo-saas-tools</small></a></p>
+        <ul>
+          <li><a href="https://github.com/ITPS/odoo-saas-tools/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/ITPS/odoo-saas-tools/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/ITPS/odoo-saas-tools">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="odoo-saas-tools" class="anchor" href="#odoo-saas-tools" aria-hidden="true"><span class="octicon octicon-link"></span></a>odoo-saas-tools</h1>
+
+<p>Odoo (OpenERP) addons to provide SaaS</p>
+
+<p>Structure of SaaS system:</p>
+
+<ul>
+<li>SaaS Portal - main database</li>
+<li>SaaS Servers - technical databases to control client databases. SaaS server create, edit, delete databases. Each SaaS Server can be installed on a separate machine (e.g. VPS)</li>
+<li>SaaS Clients - client database to be used by customers. Each SaaS Client is attached to a SaaS Server.</li>
+</ul>
+
+<h1>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h1>
+
+<ul>
+<li>create SaaS Client databases:
+
+<ul>
+<li>manually from SaaS Portal backend</li>
+<li>by client after choosing subdomain (similar to <a href="https://www.odoo.com/page/start">https://www.odoo.com/page/start</a> ) - module saas_portal_start</li>
+<li>by client after choosing database template (e.g. template for POS, template for ECommerce etc) with auto-generated subdomain (e.g. demo-12345.odoo.com) - module saas_server_templates</li>
+<li>by client after singing up - module saas_portal_signup</li>
+</ul>
+</li>
+<li>prepare templates for new SaaS Client database. You are able to connect to template database, install modules you need, edit configuration, edit access rights for customer etc. Such template database will be exactly what a customer will see after database creating.</li>
+<li>connect to existed SaaS Client database as administrator</li>
+<li>control SaaS Client database from SaaS Portal backend:
+
+<ul>
+<li>install, update, delete addons</li>
+<li>configure parameters (e.g. Max Allowed Users)</li>
+</ul>
+</li>
+<li>collect information from client databases (count of users, disk space usage, etc.)</li>
+<li>notify customers about news by sending messages to Whole Company messaging group <em>(under development)</em>
+</li>
+<li>show message at the top of a page (e.g. Your free trial will expire in about 4 hours  Register now to add 15 days for free!) <em>(under development)</em>
+</li>
+</ul>
+
+<h1>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h1>
+
+<ol>
+<li>
+<p>Configure Odoo installation</p>
+
+<ul>
+<li>
+<p>set dbfilter in config file or run odoo with --db-filter parameter, e.g. ^%h$</p>
+
+<ul>
+<li>be sure, that you don't use db_name in config file and don't run odoo with -d (--database) parameter</li>
+</ul>
+</li>
+<li><p>execute commands below to allow create databases with dots in name:</p></li>
+</ul>
+
+<blockquote>
+<p>cd path/to/odoo</p>
+
+<p>sed -i 's/matches="[^"]*"//g' addons/web/static/src/xml/base.xml</p>
+</blockquote>
+
+<ul>
+<li>If you run odoo locally, add domains you are going to use to /etc/hosts. E.g.</li>
+</ul>
+
+<blockquote>
+<p>127.0.0.1  odoo.local # portal</p>
+
+<p>127.0.0.1  s1.odoo.local # server</p>
+
+<p>127.0.0.1  t1.odoo.local # template</p>
+
+<p>127.0.0.1  t2.odoo.local # template</p>
+
+<p>127.0.0.1  client-x.odoo.local</p>
+
+<p>127.0.0.1  client-y.odoo.local</p>
+
+<p>127.0.0.1  client-z.odoo.local</p>
+</blockquote>
+
+<ul>
+<li>
+<p>Redirect requests to domains above to localhost:8069 (e.g. via nginx)</p>
+
+<ul>
+<li>be sure, that odoo gets host header, e.g. for nginx:</li>
+</ul>
+
+<blockquote>
+<p>proxy_set_header Host $host;</p>
+
+<p>proxy_set_header X-Real-IP       $remote_addr;</p>
+
+<p>proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</p>
+
+<p>proxy_set_header X-Forwarded-Proto $scheme;</p>
+</blockquote>
+</li>
+<li>
+<p>install dependencies:</p>
+
+<ul>
+<li>pip install oauthlib</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Create two databases (via /web/database/manager):</p>
+
+<ul>
+<li>Main Database, e.g. <strong>odoo.local</strong>:
+
+<ul>
+<li>install saas_portal and saas_portal_* (optional) modules</li>
+</ul>
+</li>
+<li>Server Database, e.g. <strong>s1.odoo.local</strong>
+
+<ul>
+<li>install saas_server</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Configure <strong>Server Database</strong></p>
+
+<ul>
+<li>Tick "Technical Features" for admin at Settings/Users/Users - Administrator
+
+<ul>
+<li>Refresh page</li>
+</ul>
+</li>
+<li>Open Settings/Users/OAuth Providers - SaaS
+
+<ul>
+<li>click [Edit]</li>
+<li>update domain name at "Authentication URL" and "Validation URL", change http to https if needed. E.g.
+
+<ul>
+<li>http://<strong>odoo.local</strong>/oauth2/auth</li>
+</ul>
+</li>
+<li>http://<strong>odoo.local</strong>/oauth2/tokeninfo</li>
+<li>Edit Body according to your brand</li>
+<li>click [Save]</li>
+<li>remember value of Client ID field. It's a database.uuid of SaaS Server.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Configure <strong>Main Database</strong>:</p>
+
+<ul>
+<li>open Settings/Configuration/SaaS Portal Settings
+
+<ul>
+<li>set <em>Base SaaS domain</em>, e.g. <strong>odoo.local</strong>
+</li>
+<li>click Apply (do it even if you didn't make changes)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Register Server Database in Main Database</p>
+
+<ul>
+<li>open SaaS/SaaS/Servers
+
+<ul>
+<li>click [Create]</li>
+<li>set Database Name, e.g. <strong>s1.odoo.local</strong>
+</li>
+<li>fix autogenerated Database UUID to actual one (see previous section)</li>
+<li>click [Save]</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Create Plan</p>
+
+<ul>
+<li>open Saas/SaaS/Plans
+
+<ul>
+<li>click [Create]</li>
+<li>set Plan's name, e.g. "POS + ECommerce"</li>
+<li>set SaaS Server</li>
+<li>set Template DB: type name, e.g. <strong>t1.odoo.local</strong>, and click "Create"</li>
+<li>click [Save]</li>
+<li>click [Create Template DB].</li>
+<li>wait couple minutes while Database is being created.</li>
+<li>click [Sync server]</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Prepare Template Database for Plan</p>
+
+<ul>
+<li>open template db, e.g. <strong>t1.odoo.local</strong>
+</li>
+<li>install modules that will be used for Plan, e.g. <em>point_of_sale</em>, <em>website_sale</em>
+</li>
+<li>make any other changes in database if needed. E.g. configure
+chart of accounts.</li>
+<li>open Settings/Users/Users - onwer_template. Configure Access Rights for Owner.</li>
+</ul>
+</li>
+<li>
+<p>Try to create database from template</p>
+
+<ul>
+<li>open SaaS/Saas/Plans - select plan
+
+<ul>
+<li>click [Create Client]</li>
+<li>set DB Name, e.g. client-x.odoo.local</li>
+<li>click [Create]</li>
+<li>wait couple minutes while Database is being created.</li>
+<li>click [Sync server]</li>
+</ul>
+</li>
+<li>open SaaS/SaaS/Client - choose client
+
+<ul>
+<li>click [Configure]
+
+<ul>
+<li>open Parameters tab</li>
+</ul>
+</li>
+<li>add parameter "Max Users", set Value 2</li>
+<li>click [Execute]</li>
+<li>click [Close]</li>
+<li>click [Log in]
+
+<ul>
+<li>you see created database</li>
+</ul>
+</li>
+<li>try to create new user to test "Max Users" setting</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Get more</p>
+
+<ul>
+<li>check description of other saas_* modules to get more features</li>
+</ul>
+</li>
+</ol>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/ITPS">ITPS</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
